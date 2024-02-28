@@ -3,14 +3,15 @@ const chalk = require('chalk');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const Parse = require('parse/node');
 
-const MigrationError = require('./libs/MigrationError');
+// const MigrationError = require('./libs/MigrationError');
 const { buildInfo } = require('./libs/system');
 const L = require('./libs/logger');
 const { getAllMigrations, saveAllMigrations } = require('./libs/migration-model');
 
 const {
-  APPLICATION_ID, JAVASCRIPT_KEY, MASTER_KEY, SERVER_URL,
+  JAVASCRIPT_KEY, MASTER_KEY, SERVER_URL,
 } = process.env;
+const APPLICATION_ID = process.env?.APPLICATION_ID || process.env?.APP_ID;
 
 Parse.initialize(APPLICATION_ID, JAVASCRIPT_KEY, MASTER_KEY);
 Parse.serverURL = SERVER_URL;
@@ -54,9 +55,21 @@ async function migrationUp() {
     console.log(L.loading(`Migrating ${migrationFilename}`));
 
     try {
+      if (migrationScript?.environments) {
+        console.log(chalk`Allowed environments {underline ${migrationScript.environments.join(', ')}}\n`);
+      }
       // eslint-disable-next-line no-await-in-loop
-      await migrationScript.up(Parse);
-      console.log(L.checked(`Migrated  ${migrationFilename}\n`));
+      if (
+        !migrationScript?.environments
+        || migrationScript.environments.includes(APPLICATION_ID)
+      ) {
+        // eslint-disable-next-line no-await-in-loop
+        await migrationScript.up(Parse);
+        migrationToRun.applied = true;
+      } else {
+        migrationToRun.applied = false;
+      }
+      console.log(L.checked(`Migrated  ${migrationFilename} {applied: ${migrationToRun.applied}}\n`));
       migrationsDone.push(migrationToRun);
     } catch (error) {
       console.log(L.error(error.message));

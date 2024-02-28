@@ -7,8 +7,9 @@ const { buildInfo, seederDirectory } = require('./libs/system');
 const L = require('./libs/logger');
 
 const {
-  APPLICATION_ID, MASTER_KEY, SERVER_URL,
+  MASTER_KEY, SERVER_URL,
 } = process.env;
+const APPLICATION_ID = process.env?.APPLICATION_ID || process.env?.APP_ID;
 
 /**
  * Seed data

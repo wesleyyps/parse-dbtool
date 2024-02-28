@@ -5,8 +5,9 @@ const { getAllMigrations } = require('./libs/migration-model');
 const { buildInfo } = require('./libs/system');
 
 const {
-  APPLICATION_ID, JAVASCRIPT_KEY, MASTER_KEY, SERVER_URL,
+  JAVASCRIPT_KEY, MASTER_KEY, SERVER_URL,
 } = process.env;
+const APPLICATION_ID = process.env?.APPLICATION_ID || process.env?.APP_ID;
 
 Parse.initialize(APPLICATION_ID, JAVASCRIPT_KEY, MASTER_KEY);
 Parse.serverURL = SERVER_URL;

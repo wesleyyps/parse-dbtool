@@ -12,6 +12,7 @@ const { migrationDirectory } = require('./system');
 const initMigrationSchema = async (Parse) => {
   const schema = new Parse.Schema('Migration');
   schema.addString('name');
+  schema.addBoolean('applied');
 
   /** @type {Parse.Schema.CLP} */
   const masterKeyOnlyCLP = {
@@ -106,10 +107,11 @@ const saveAllMigrations = (Parse, migrations) => {
     /** @type {Parse.Object} */
     const migrationObject = new Migration();
     migrationObject.set('name', migration.name);
+    migrationObject.set('applied', migration.applied);
 
     const masterKeyOnlyACL = new Parse.ACL();
     masterKeyOnlyACL.setPublicReadAccess(false);
-    masterKeyOnlyACL.setPublicReadAccess(false);
+    masterKeyOnlyACL.setPublicWriteAccess(false);
 
     migrationObject.setACL(masterKeyOnlyACL);
 
@@ -124,6 +126,7 @@ const saveAllMigrations = (Parse, migrations) => {
  *
  * @property {('up'|'down')} status
  * @property {string} name
+ * @property {boolean=} applied
  * @property {string} fullpath
  */
 

@@ -119,3 +119,6 @@ dist
 
 # Remove examples until the time comes
 examples/
+
+# Vscode History
+.history

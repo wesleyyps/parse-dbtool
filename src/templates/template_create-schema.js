@@ -1,5 +1,6 @@
+// exports.environments = [];
+
 /**
- *
  * @param {Parse} Parse
  */
 exports.up = async (Parse) => {
@@ -15,7 +16,6 @@ exports.up = async (Parse) => {
 };
 
 /**
- *
  * @param {Parse} Parse
  */
 exports.down = async (Parse) => {

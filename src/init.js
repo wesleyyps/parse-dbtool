@@ -9,8 +9,9 @@ const {
 const { isRequiredEnvironmentAvailable } = require('./libs/helpers');
 
 const {
-  APPLICATION_ID, MASTER_KEY, SERVER_URL,
+  MASTER_KEY, SERVER_URL,
 } = process.env;
+const APPLICATION_ID = process.env?.APPLICATION_ID || process.env?.APP_ID;
 
 const initHandler = async (args) => {
   console.log(`\n${buildInfo}\n`);

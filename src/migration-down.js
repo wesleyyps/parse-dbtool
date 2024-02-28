@@ -5,6 +5,7 @@ const { getAllMigrations, removeMigrations } = require('./libs/migration-model')
 const { buildInfo } = require('./libs/system');
 
 const { SERVER_URL } = process.env;
+const APPLICATION_ID = process.env?.APPLICATION_ID || process.env?.APP_ID;
 
 const builder = (args) => args
   .option('step', {
@@ -42,8 +43,18 @@ async function migrationDown(step = 1) {
 
     console.log(L.loading(`Reverting ${migrationDetail.name}`));
 
-    // eslint-disable-next-line no-await-in-loop
-    const undidMigration = await migrationScript.down(Parse);
+    if (migrationScript?.environments) {
+      console.log(chalk`Allowed environments {underline ${migrationScript.environments.join(', ')}}\n`);
+    }
+
+    const undidMigration = !migrationScript?.environments
+      || migrationScript.environments.includes(APPLICATION_ID)
+      // eslint-disable-next-line no-await-in-loop
+      ? await migrationScript.down(Parse)
+      : true;
+
+    migrationDetail.applied = !migrationScript?.environments
+      || migrationScript.environments.includes(APPLICATION_ID);
 
     if (undidMigration) {
       undidMigrations.push(migrationDetail);
@@ -52,7 +63,7 @@ async function migrationDown(step = 1) {
       break;
     }
 
-    console.log(L.checked(`Reverted  ${migrationDetail.name}\n`));
+    console.log(L.checked(`Reverted  ${migrationDetail.name} {applied: ${migrationDetail.applied}}\n`));
 
     // Add timeout to safety finish one function before going to next
     // eslint-disable-next-line no-await-in-loop
