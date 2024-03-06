@@ -74,7 +74,8 @@ const initHandler = async (args) => {
   }
 
   /** @type {boolean} */
-  const allValid = validations.reduce((acc, curr) => acc && curr.isValid, true);
+  const allValid = validations.length === 0
+        || validations.reduce((acc, curr) => acc && curr.isValid, true);
 
   if (allValid) {
     // Initialize Migration schema
@@ -105,6 +106,8 @@ const initHandler = async (args) => {
         console.log(L.error('Cannot initialize Migration Schema'));
         throw err;
       });
+  } else {
+    console.log(L.error('ABORTED'));
   }
 };
 
