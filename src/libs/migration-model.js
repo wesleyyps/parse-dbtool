@@ -11,6 +11,15 @@ const { migrationDirectory } = require('./system');
  */
 const initMigrationSchema = async (Parse) => {
   const schema = new Parse.Schema('Migration');
+  let exists;
+
+  try {
+    await schema.get();
+    exists = true;
+  } catch (e) {
+    console.log(e);
+    exists = false;
+  }
   schema.addString('name');
   schema.addBoolean('applied');
 
@@ -25,7 +34,7 @@ const initMigrationSchema = async (Parse) => {
     addField: {},
   };
   schema.setCLP(masterKeyOnlyCLP);
-  return schema.save();
+  return exists ? schema.update() : schema.save();
 };
 
 /**

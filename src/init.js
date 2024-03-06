@@ -40,28 +40,28 @@ const initHandler = async (args) => {
 
   // check databases/ & create if not exist yet
   const databasesDir = path.resolve(databaseDirectory);
-  if (fs.existsSync(databasesDir)) {
+  /* if (fs.existsSync(databasesDir)) {
     // console.log(L.error('databases/ directory not exist'));
     console.log(L.error('The `databases/` directory already exist. Failed to initialize.\n'));
 
     // TODO: How to solve this (--force flag?)
     return;
   }
-  validations.find((validation) => validation.name === 'database-dir').isValid = true;
+  validations.find((validation) => validation.name === 'database-dir').isValid = true; */
 
   // Check databases/migrations/ dir
   const migrationDir = path.resolve(migrationDirectory);
-  if (fs.existsSync(migrationDir)) {
+  /* if (fs.existsSync(migrationDir)) {
     console.log(L.error(`The migration folder already exist at ${migrationDir}\n`));
   }
-  validations.find((validation) => validation.name === 'migration-dir').isValid = true;
+  validations.find((validation) => validation.name === 'migration-dir').isValid = true; */
 
   // Check databases/seeder/ dir
   const seederDir = path.resolve(seederDirectory);
-  if (fs.existsSync(seederDir)) {
+  /* if (fs.existsSync(seederDir)) {
     console.log(L.error(`The seeders folder already exist at ${seederDir}\n`));
   }
-  validations.find((validation) => validation.name === 'seed-dir').isValid = true;
+  validations.find((validation) => validation.name === 'seed-dir').isValid = true; */
 
   // Check environment to connect to ParseServer
   const requiredEnv = await isRequiredEnvironmentAvailable(SERVER_URL, APPLICATION_ID, MASTER_KEY)
@@ -83,13 +83,19 @@ const initHandler = async (args) => {
     initMigrationSchema(Parse)
       .then(() => {
         //
-        fs.mkdirSync(databasesDir);
+        if (!fs.existsSync(databasesDir)) {
+          fs.mkdirSync(databasesDir);
+        }
         console.log(L.success(`Successfully created databases folder at ${databasesDir}`));
 
-        fs.mkdirSync(migrationDir);
+        if (!fs.existsSync(migrationDir)) {
+          fs.mkdirSync(migrationDir);
+        }
         console.log(L.success(`Successfully created migrations folder at ${migrationDir}`));
 
-        fs.mkdirSync(seederDir);
+        if (!fs.existsSync(seederDir)) {
+          fs.mkdirSync(seederDir);
+        }
         console.log(L.success(`Successfully created seeder folder at ${seederDir}`));
 
         console.log(L.success('Successfully created Migration Schema in database'));
