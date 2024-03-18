@@ -19,18 +19,6 @@ const initHandler = async (args) => {
 
   const validations = [
     {
-      name: 'database-dir',
-      isValid: false,
-    },
-    {
-      name: 'migration-dir',
-      isValid: false,
-    },
-    {
-      name: 'seed-dir',
-      isValid: false,
-    },
-    {
       name: 'database-connect',
       isValid: false,
     },
@@ -74,8 +62,7 @@ const initHandler = async (args) => {
   }
 
   /** @type {boolean} */
-  const allValid = validations.length === 0
-        || validations.reduce((acc, curr) => acc && curr.isValid, true);
+  const allValid = validations.reduce((acc, curr) => acc && curr.isValid, true);
 
   if (allValid) {
     // Initialize Migration schema
@@ -86,18 +73,24 @@ const initHandler = async (args) => {
         //
         if (!fs.existsSync(databasesDir)) {
           fs.mkdirSync(databasesDir);
+          console.log(L.success(`Successfully created databases folder at ${databasesDir}`));
+        } else {
+          console.log(L.info(`Databases folder at ${databasesDir} already exists`));
         }
-        console.log(L.success(`Successfully created databases folder at ${databasesDir}`));
 
         if (!fs.existsSync(migrationDir)) {
           fs.mkdirSync(migrationDir);
+          console.log(L.success(`Successfully created migrations folder at ${migrationDir}`));
+        } else {
+          console.log(L.info(`Migrations folder at ${migrationDir} already exists`));
         }
-        console.log(L.success(`Successfully created migrations folder at ${migrationDir}`));
 
         if (!fs.existsSync(seederDir)) {
           fs.mkdirSync(seederDir);
+          console.log(L.success(`Successfully created seeder folder at ${seederDir}`));
+        } else {
+          console.log(L.info(`Seeder folder at ${seederDir} already exists`));
         }
-        console.log(L.success(`Successfully created seeder folder at ${seederDir}`));
 
         console.log(L.success('Successfully created Migration Schema in database'));
         console.log('');

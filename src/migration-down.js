@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 const Parse = require('parse/node');
 const L = require('./libs/logger');
-const { getAllMigrations, removeMigrations } = require('./libs/migration-model');
+const { getAllMigrations, removeMigrations, removeMigration } = require('./libs/migration-model');
 const { buildInfo } = require('./libs/system');
 
 const { SERVER_URL } = process.env;
@@ -43,27 +43,32 @@ async function migrationDown(step = 1) {
 
     console.log(L.loading(`Reverting ${migrationDetail.name}`));
 
-    if (migrationScript?.environments) {
-      console.log(chalk`Allowed environments {underline ${migrationScript.environments.join(', ')}}\n`);
+    try {
+      if (migrationScript?.environments) {
+        console.log(chalk`Allowed environments {underline ${migrationScript.environments.join(', ')}}\n`);
+      }
+
+      const undidMigration = !migrationScript?.environments
+        || migrationScript.environments.includes(APPLICATION_ID)
+        // eslint-disable-next-line no-await-in-loop
+        ? await migrationScript.down(Parse, console, L)
+        : true;
+
+      migrationDetail.applied = !migrationScript?.environments
+        || migrationScript.environments.includes(APPLICATION_ID);
+
+      if (undidMigration) {
+        console.log(L.checked(`Reverted  ${migrationDetail.name} {applied: ${migrationDetail.applied}}\n`));
+        // undidMigrations.push(migrationDetail);
+        removeMigration(Parse, migrationDetail);
+      } else {
+        // Stop undoing when failed
+        break;
+      }
+    } catch (error) {
+      console.log(L.error(error.message));
+      console.log(L.error('Please check manually for broken changes'));
     }
-
-    const undidMigration = !migrationScript?.environments
-      || migrationScript.environments.includes(APPLICATION_ID)
-      // eslint-disable-next-line no-await-in-loop
-      ? await migrationScript.down(Parse)
-      : true;
-
-    migrationDetail.applied = !migrationScript?.environments
-      || migrationScript.environments.includes(APPLICATION_ID);
-
-    if (undidMigration) {
-      undidMigrations.push(migrationDetail);
-    } else {
-      // Stop undoing when failed
-      break;
-    }
-
-    console.log(L.checked(`Reverted  ${migrationDetail.name} {applied: ${migrationDetail.applied}}\n`));
 
     // Add timeout to safety finish one function before going to next
     // eslint-disable-next-line no-await-in-loop
@@ -81,10 +86,11 @@ const migrationDownHandler = async (args) => {
   console.log(chalk`Undo migration on parse-server at {underline ${SERVER_URL}}\n`);
 
   try {
-    const undidMigrations = await migrationDown(step);
+    // const undidMigrations = await migrationDown(step);
+    await migrationDown(step);
 
     // Remove ran script from database
-    await removeMigrations(Parse, undidMigrations);
+    // await removeMigrations(Parse, undidMigrations);
   } catch (err) {
     console.log(L.error(err.message));
     throw err;

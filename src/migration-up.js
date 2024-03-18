@@ -6,7 +6,7 @@ const Parse = require('parse/node');
 // const MigrationError = require('./libs/MigrationError');
 const { buildInfo } = require('./libs/system');
 const L = require('./libs/logger');
-const { getAllMigrations, saveAllMigrations } = require('./libs/migration-model');
+const { getAllMigrations, saveAllMigrations, saveMigration } = require('./libs/migration-model');
 
 const {
   JAVASCRIPT_KEY, MASTER_KEY, SERVER_URL,
@@ -64,15 +64,17 @@ async function migrationUp() {
         || migrationScript.environments.includes(APPLICATION_ID)
       ) {
         // eslint-disable-next-line no-await-in-loop
-        await migrationScript.up(Parse);
+        await migrationScript.up(Parse, console, L);
         migrationToRun.applied = true;
       } else {
         migrationToRun.applied = false;
       }
       console.log(L.checked(`Migrated  ${migrationFilename} {applied: ${migrationToRun.applied}}\n`));
-      migrationsDone.push(migrationToRun);
+      // migrationsDone.push(migrationToRun);
+      saveMigration(Parse, migrationToRun);
     } catch (error) {
       console.log(L.error(error.message));
+      console.log(L.error('Please check manually for broken changes'));
       // Break the loop when error happen
       break;
     }
@@ -95,9 +97,10 @@ const migrationUpHandler = async (args) => {
 
   console.log(chalk`Run migration on parse-server at {underline ${SERVER_URL}}\n`);
 
-  const runMigrations = await migrationUp();
+  // const runMigrations = await migrationUp();
+  await migrationUp();
 
-  await saveAllMigrations(Parse, runMigrations);
+  // await saveAllMigrations(Parse, runMigrations);
 
   // TODO: Seed
   if (shouldRunSeed) {

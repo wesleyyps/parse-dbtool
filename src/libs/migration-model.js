@@ -17,7 +17,7 @@ const initMigrationSchema = async (Parse) => {
     await schema.get();
     exists = true;
   } catch (e) {
-    console.log(e);
+    console.log(L.info(e));
     exists = false;
   }
   schema.addString('name');
@@ -107,6 +107,18 @@ const removeMigrations = async (Parse, migrations) => {
 /**
  *
  * @param {Parse} Parse
+ * @param {MigrationDetail} migration
+ */
+const removeMigration = async (Parse, migration) => {
+  const migrationQuery = new Parse.Query('Migration');
+  migrationQuery.equalTo('name', migration.name);
+  const migrationObject = await migrationQuery.first({ useMasterKey: true });
+  return Parse.Object.destroyAll([migrationObject], { useMasterKey: true });
+};
+
+/**
+ *
+ * @param {Parse} Parse
  * @param {MigrationDetail[]} migrations
  */
 const saveAllMigrations = (Parse, migrations) => {
@@ -131,6 +143,27 @@ const saveAllMigrations = (Parse, migrations) => {
 };
 
 /**
+ *
+ * @param {Parse} Parse
+ * @param {MigrationDetail} migration
+ */
+const saveMigration = (Parse, migration) => {
+  const Migration = Parse.Object.extend('Migration');
+  /** @type {Parse.Object} */
+  const migrationObject = new Migration();
+  migrationObject.set('name', migration.name);
+  migrationObject.set('applied', migration.applied);
+
+  const masterKeyOnlyACL = new Parse.ACL();
+  masterKeyOnlyACL.setPublicReadAccess(false);
+  masterKeyOnlyACL.setPublicWriteAccess(false);
+
+  migrationObject.setACL(masterKeyOnlyACL);
+
+  return Parse.Object.saveAll([migrationObject], { useMasterKey: true });
+};
+
+/**
  * @typedef MigrationDetail
  *
  * @property {('up'|'down')} status
@@ -144,5 +177,7 @@ module.exports = {
   getAllRunMigrations,
   getAllMigrations,
   saveAllMigrations,
+  saveMigration,
   removeMigrations,
+  removeMigration,
 };
